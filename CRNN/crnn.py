@@ -2,7 +2,7 @@ import os
 import time
 import numpy as np
 import tensorflow as tf
-from scipy.misc import imread, imresize, imsave
+from scipy.misc.pilutil import imread, imresize, imsave
 from tensorflow.contrib import rnn
 
 from data_manager import DataManager
@@ -19,23 +19,25 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 class CRNN(object):
     def __init__(
-        self,
-        batch_size,
-        model_path,
-        examples_path,
-        max_image_width,
-        train_test_ratio,
-        restore,
-        char_set_string,
-        use_trdg,
-        language,
+            self,
+            batch_size,
+            model_path,
+            examples_path,
+            max_image_width,
+            train_test_ratio,
+            restore,
+            char_set_string,
+            use_trdg,
+            language,
     ):
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         self.step = 0
         self.CHAR_VECTOR = char_set_string
         self.NUM_CLASSES = len(self.CHAR_VECTOR) + 1
 
         print("CHAR_VECTOR {}".format(self.CHAR_VECTOR))
         print("NUM_CLASSES {}".format(self.NUM_CLASSES))
+        print("BATCH_SIZE {}".format(batch_size))
 
         self.model_path = model_path
         self.save_path = os.path.join(model_path, "ckp")
@@ -136,7 +138,8 @@ class CRNN(object):
             )
 
             # 2 x 2 / 1
-            pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+            pool1 = tf.layers.max_pooling2d(
+                inputs=conv1, pool_size=[2, 2], strides=2)
 
             # 128 / 3 x 3 / 1 / 1
             conv2 = tf.layers.conv2d(
@@ -148,7 +151,8 @@ class CRNN(object):
             )
 
             # 2 x 2 / 1
-            pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+            pool2 = tf.layers.max_pooling2d(
+                inputs=conv2, pool_size=[2, 2], strides=2)
 
             # 256 / 3 x 3 / 1 / 1
             conv3 = tf.layers.conv2d(
@@ -263,7 +267,8 @@ class CRNN(object):
         )
 
         # The error rate
-        acc = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), targets))
+        acc = tf.reduce_mean(tf.edit_distance(
+            tf.cast(decoded[0], tf.int32), targets))
 
         init = tf.global_variables_initializer()
 
@@ -284,6 +289,7 @@ class CRNN(object):
         with self.session.as_default():
             print("Training")
             for i in range(self.step, iteration_count + self.step):
+                print("Processing iteration ::",i )
                 batch_count = 0
                 iter_loss = 0
                 for batch_y, batch_dt, batch_x in self.data_manager.train_batches:
@@ -292,14 +298,15 @@ class CRNN(object):
                         feed_dict={
                             self.inputs: batch_x,
                             self.seq_len: [self.max_char_count]
-                            * self.data_manager.batch_size,
+                                          * self.data_manager.batch_size,
                             self.targets: batch_dt,
                         },
                     )
 
                     if i % 10 == 0:
                         for j in range(2):
-                            pred = ground_truth_to_word(decoded[j], self.CHAR_VECTOR)
+                            pred = ground_truth_to_word(
+                                decoded[j], self.CHAR_VECTOR)
                             print("{} | {}".format(batch_y[j], pred))
                         print("---- {} | {} ----".format(i, batch_count))
 
@@ -308,7 +315,8 @@ class CRNN(object):
                     if batch_count >= 100:
                         break
 
-                self.saver.save(self.session, self.save_path, global_step=self.step)
+                self.saver.save(self.session, self.save_path,
+                                global_step=self.step)
 
                 self.save_frozen_model("save/frozen.pb")
 
@@ -327,21 +335,22 @@ class CRNN(object):
                     feed_dict={
                         self.inputs: batch_x,
                         self.seq_len: [self.max_char_count]
-                        * self.data_manager.batch_size,
+                                      * self.data_manager.batch_size,
                     },
                 )
+                print("decoded", decoded)
 
                 for i, y in enumerate(batch_y):
-                    print(batch_y[i])
-                    print(ground_truth_to_word(decoded[i], self.CHAR_VECTOR))
+                    print("Test result", batch_y[i])
+                    print("Ground truth", ground_truth_to_word(decoded[i], self.CHAR_VECTOR))
         return None
 
     def save_frozen_model(
-        self,
-        path=None,
-        optimize=False,
-        input_nodes=["input", "seq_len"],
-        output_nodes=["dense_decoded"],
+            self,
+            path=None,
+            optimize=False,
+            input_nodes=["input", "seq_len"],
+            output_nodes=["dense_decoded"],
     ):
         if not path or len(path) == 0:
             raise ValueError("Save path for frozen model is not specified")

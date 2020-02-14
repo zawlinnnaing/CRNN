@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+out/
+
+.idea/
+*.jpg
+
+CRNN/*.jpg
+
 # Distribution / packaging
 .Python
 env/

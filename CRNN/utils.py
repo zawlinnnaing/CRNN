@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from scipy.misc import imread, imresize, imsave
+from scipy.misc.pilutil import imread, imresize, imsave
 
 
 def sparse_tuple_from(sequences, dtype=np.int32):
@@ -11,7 +11,6 @@ def sparse_tuple_from(sequences, dtype=np.int32):
 
     indices = []
     values = []
-
     for n, seq in enumerate(sequences):
         indices.extend(zip([n] * len(seq), [i for i in range(len(seq))]))
         values.extend(seq)
@@ -39,13 +38,14 @@ def resize_image(im_arr, input_width):
         ratio = 32.0 / r
         im_arr_resized = imresize(im_arr, (32, int(c * ratio)))
         final_arr[
-            :, 0 : min(input_width, np.shape(im_arr_resized)[1])
+            :, 0: min(input_width, np.shape(im_arr_resized)[1])
         ] = im_arr_resized[:, 0:input_width]
     return final_arr, c
 
 
 def label_to_array(label, char_vector):
     try:
+        label = label.replace("&", "-and-")
         return [char_vector.index(x) for x in label]
     except Exception as ex:
         print(label)

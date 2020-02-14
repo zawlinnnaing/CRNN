@@ -1,7 +1,7 @@
 import argparse
 from crnn import CRNN
 
-CHAR_VECTOR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-'.!?,\"&"
+CHAR_VECTOR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-'.!?,\""
 
 
 def parse_arguments():
@@ -9,7 +9,8 @@ def parse_arguments():
         Parse the command line arguments of the program.
     """
 
-    parser = argparse.ArgumentParser(description="Train or test the CRNN model.")
+    parser = argparse.ArgumentParser(
+        description="Train or test the CRNN model.")
 
     parser.add_argument(
         "--train", action="store_true", help="Define if we train the model"
