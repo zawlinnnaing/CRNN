@@ -303,7 +303,7 @@ class CRNN(object):
                         },
                     )
 
-                    if i % 10 == 0:
+                    if i % 2 == 0:
                         for j in range(2):
                             pred = ground_truth_to_word(
                                 decoded[j], self.CHAR_VECTOR)
