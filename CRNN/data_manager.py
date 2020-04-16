@@ -70,14 +70,16 @@ class DataManager(object):
 
             batch_y = np.reshape(np.array(raw_batch_y), (-1))
 
-            batch_dt = sparse_tuple_from(np.reshape(np.array(raw_batch_la), (-1)))
+            batch_dt = sparse_tuple_from(
+                np.reshape(np.array(raw_batch_la), (-1)))
 
             raw_batch_x = np.swapaxes(raw_batch_x, 1, 2)
 
             raw_batch_x = raw_batch_x / 255.0
 
             batch_x = np.reshape(
-                np.array(raw_batch_x), (len(raw_batch_x), self.max_image_width, 32, 1)
+                np.array(raw_batch_x), (len(raw_batch_x),
+                                        self.max_image_width, 32, 1)
             )
             if queue.qsize() < 20:
                 queue.put((batch_y, batch_dt, batch_x))
@@ -97,7 +99,10 @@ class DataManager(object):
             yield q.get()
 
     def load_data(self):
-        """Load all the images in the folder
+        """
+        Load all the images in the folder
+
+        return: List with tuples (img_arr, label_string, label_index_array) and list length
         """
 
         print("Loading data")
@@ -139,14 +144,15 @@ class DataManager(object):
 
             batch_y = np.reshape(np.array(raw_batch_y), (-1))
 
-            batch_dt = sparse_tuple_from(np.reshape(np.array(raw_batch_la), (-1)))
+            batch_dt = sparse_tuple_from(np.array(raw_batch_la))
 
             raw_batch_x = np.swapaxes(raw_batch_x, 1, 2)
 
             raw_batch_x = raw_batch_x / 255.0
 
             batch_x = np.reshape(
-                np.array(raw_batch_x), (len(raw_batch_x), self.max_image_width, 32, 1)
+                np.array(raw_batch_x), (len(raw_batch_x),
+                                        self.max_image_width, 32, 1)
             )
 
             train_batches.append((batch_y, batch_dt, batch_x))
@@ -167,14 +173,15 @@ class DataManager(object):
 
             batch_y = np.reshape(np.array(raw_batch_y), (-1))
 
-            batch_dt = sparse_tuple_from(np.reshape(np.array(raw_batch_la), (-1)))
+            batch_dt = sparse_tuple_from(np.array(raw_batch_la))
 
             raw_batch_x = np.swapaxes(raw_batch_x, 1, 2)
 
             raw_batch_x = raw_batch_x / 255.0
 
             batch_x = np.reshape(
-                np.array(raw_batch_x), (len(raw_batch_x), self.max_image_width, 32, 1)
+                np.array(raw_batch_x), (len(raw_batch_x),
+                                        self.max_image_width, 32, 1)
             )
 
             test_batches.append((batch_y, batch_dt, batch_x))

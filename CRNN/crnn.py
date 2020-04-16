@@ -29,13 +29,16 @@ class CRNN(object):
             char_set_string,
             use_trdg,
             language,
+            freeze_cnn,
+            first_time=False
     ):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         self.step = 0
         self.CHAR_VECTOR = char_set_string
         self.NUM_CLASSES = len(self.CHAR_VECTOR) + 1
-
-        print("CHAR_VECTOR {}".format(self.CHAR_VECTOR))
+        self.freeze_cnn = freeze_cnn
+        self.first_time = first_time
+        # print("CHAR_VECTOR {}".format(self.CHAR_VECTOR))
         print("NUM_CLASSES {}".format(self.NUM_CLASSES))
         print("BATCH_SIZE {}".format(batch_size))
 
@@ -62,17 +65,32 @@ class CRNN(object):
                 self.init,
             ) = self.crnn(max_image_width)
             self.init.run()
-
         with self.session.as_default():
+            # print('Checkpoint collections',
+            #       tf.train.list_variables(tf.train.latest_checkpoint(self.model_path)))
+            # print("trainable variables",
+            #       tf.compat.v1.trainable_variables(scope="conv"),
+            #       tf.compat.v1.trainable_variables(scope="batch"),
+            #       "\n",
+            #       tf.compat.v1.trainable_variables())
             self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
             # Loading last save if needed
             if self.restore:
                 print("Restoring")
                 ckpt = tf.train.latest_checkpoint(self.model_path)
+
                 if ckpt:
                     print("Checkpoint is valid")
                     self.step = int(ckpt.split("-")[1])
-                    self.saver.restore(self.session, ckpt)
+                    if self.first_time:
+                        print(
+                            "Restoring only CNN variables , since it is first time.")
+                        var_list = tf.compat.v1.trainable_variables(
+                            scope='conv') + tf.compat.v1.trainable_variables(scope='batch')
+                        saver = tf.train.Saver(var_list)
+                        saver.restore(self.session, ckpt)
+                    else:
+                        self.saver.restore(self.session, ckpt)
 
         # Creating data_manager
         self.data_manager = DataManager(
@@ -256,9 +274,20 @@ class CRNN(object):
         cost = tf.reduce_mean(loss)
 
         # Training step
-        optimizer = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(cost)
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
+        if self.freeze_cnn:
+            # Only training weight and bias and bidirectional-rnn variables
+            trainable_variables = []
+            trainable_variables.extend(
+                tf.compat.v1.trainable_variables(scope="bidirectional-rnn"))
+            trainable_variables.extend(
+                tf.compat.v1.trainable_variables(scope="(W:|b:)"))
+            print('Trainable variables: ', trainable_variables)
+            optimizer = optimizer.minimize(cost, var_list=trainable_variables)
+        else:
+            optimizer = optimizer.minimize(cost)
 
-        # The decoded answer
+            # The decoded answer
         decoded, log_prob = tf.nn.ctc_beam_search_decoder(
             logits, seq_len, merge_repeated=False
         )
@@ -289,7 +318,7 @@ class CRNN(object):
         with self.session.as_default():
             print("Training")
             for i in range(self.step, iteration_count + self.step):
-                print("Processing iteration ::",i )
+                print("Processing iteration ::", i)
                 batch_count = 0
                 iter_loss = 0
                 for batch_y, batch_dt, batch_x in self.data_manager.train_batches:
@@ -298,7 +327,7 @@ class CRNN(object):
                         feed_dict={
                             self.inputs: batch_x,
                             self.seq_len: [self.max_char_count]
-                                          * self.data_manager.batch_size,
+                            * self.data_manager.batch_size,
                             self.targets: batch_dt,
                         },
                     )
@@ -335,14 +364,15 @@ class CRNN(object):
                     feed_dict={
                         self.inputs: batch_x,
                         self.seq_len: [self.max_char_count]
-                                      * self.data_manager.batch_size,
+                        * self.data_manager.batch_size,
                     },
                 )
                 print("decoded", decoded)
 
                 for i, y in enumerate(batch_y):
                     print("Test result", batch_y[i])
-                    print("Ground truth", ground_truth_to_word(decoded[i], self.CHAR_VECTOR))
+                    print("Ground truth", ground_truth_to_word(
+                        decoded[i], self.CHAR_VECTOR))
         return None
 
     def save_frozen_model(

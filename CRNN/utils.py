@@ -11,7 +11,9 @@ def sparse_tuple_from(sequences, dtype=np.int32):
 
     indices = []
     values = []
+    # print(sequences)
     for n, seq in enumerate(sequences):
+        print("seq: ", seq)
         indices.extend(zip([n] * len(seq), [i for i in range(len(seq))]))
         values.extend(seq)
 
@@ -45,7 +47,7 @@ def resize_image(im_arr, input_width):
 
 def label_to_array(label, char_vector):
     try:
-        label = label.replace("&", "-and-")
+        label = label.replace("&", " and ")
         return [char_vector.index(x) for x in label]
     except Exception as ex:
         print(label)
