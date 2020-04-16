@@ -13,7 +13,6 @@ def sparse_tuple_from(sequences, dtype=np.int32):
     values = []
     # print(sequences)
     for n, seq in enumerate(sequences):
-        print("seq: ", seq)
         indices.extend(zip([n] * len(seq), [i for i in range(len(seq))]))
         values.extend(seq)
 
