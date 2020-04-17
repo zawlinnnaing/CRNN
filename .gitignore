@@ -109,3 +109,5 @@ ENV/
 .vscode/
 model/
 save/
+CRNN/save/*
+CRNN/save_cn/

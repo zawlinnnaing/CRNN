@@ -276,13 +276,12 @@ class CRNN(object):
         # Training step
         optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
         if self.freeze_cnn:
-            # Only training weight and bias and bidirectional-rnn variables
+            # Only training weight and bias and bidirectional-rnn tensors
             trainable_variables = []
             trainable_variables.extend(
                 tf.compat.v1.trainable_variables(scope="bidirectional-rnn"))
             trainable_variables.extend(
                 tf.compat.v1.trainable_variables(scope="(W:|b:)"))
-            print('Trainable variables: ', trainable_variables)
             optimizer = optimizer.minimize(cost, var_list=trainable_variables)
         else:
             optimizer = optimizer.minimize(cost)

@@ -143,8 +143,14 @@ class DataManager(object):
             )
 
             batch_y = np.reshape(np.array(raw_batch_y), (-1))
+            # print(f"Raw batch before Reshape", raw_batch_la)
+            # print(f"Raw batch la {np.reshape(np.array(raw_batch_la), (-1))}")
+            # batch_dt = sparse_tuple_from(np.array(raw_batch_la))
 
             batch_dt = sparse_tuple_from(np.array(raw_batch_la))
+
+            # print(
+            #     f"Batch Label: {batch_y}, \t Batch Label index: {batch_dt}")
 
             raw_batch_x = np.swapaxes(raw_batch_x, 1, 2)
 
