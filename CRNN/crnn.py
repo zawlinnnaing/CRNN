@@ -63,6 +63,7 @@ class CRNN(object):
                 self.cost,
                 self.max_char_count,
                 self.init,
+                self.weight_matrix
             ) = self.crnn(max_image_width)
             self.init.run()
         with self.session.as_default():
@@ -72,7 +73,7 @@ class CRNN(object):
             #       tf.compat.v1.trainable_variables(scope="conv"),
             #       tf.compat.v1.trainable_variables(scope="batch"),
             #       "\n",
-            #       tf.compat.v1.trainable_variables())
+            #   tf.compat.v1.trainable_variables())
             self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
             # Loading last save if needed
             if self.restore:
@@ -311,18 +312,22 @@ class CRNN(object):
             cost,
             max_char_count,
             init,
+            W
         )
 
     def train(self, iteration_count):
         with self.session.as_default():
             print("Training")
+            self.max_weight = tf.math.reduce_max(self.weight_matrix)
+
             for i in range(self.step, iteration_count + self.step):
                 print("Processing iteration ::", i)
                 batch_count = 0
                 iter_loss = 0
                 for batch_y, batch_dt, batch_x in self.data_manager.train_batches:
-                    op, decoded, loss_value, acc = self.session.run(
-                        [self.optimizer, self.decoded, self.cost, self.acc],
+                    op, decoded, loss_value, acc, max_weight = self.session.run(
+                        [self.optimizer, self.decoded, self.cost,
+                            self.acc, self.max_weight],
                         feed_dict={
                             self.inputs: batch_x,
                             self.seq_len: [self.max_char_count]
@@ -351,6 +356,7 @@ class CRNN(object):
                 print("[{}] Iteration loss: {} Error rate: {}".format(
                     self.step, iter_loss, acc))
 
+                print("max weight", max_weight)
                 self.step += 1
         return None
 
