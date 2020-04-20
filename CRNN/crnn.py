@@ -336,9 +336,9 @@ class CRNN(object):
                         },
                     )
 
-                    if i % 2 == 0:
+                    if i % 1 == 0:
                         for j in range(2):
-                            print(f"decoded ...{decoded[j]}")
+                            print(f"decoded ...{decoded}")
                             pred = ground_truth_to_word(
                                 decoded[j], self.CHAR_VECTOR)
                             print("{} | {}".format(batch_y[j], pred))
