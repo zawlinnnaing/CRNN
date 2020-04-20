@@ -4,8 +4,6 @@ import os
 
 CHAR_VECTOR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-'.!?,\""
 
-# %%
-
 
 def parse_arguments():
     """
@@ -99,8 +97,6 @@ def parse_arguments():
     return parser.parse_args()
 
 
-# Ipython cell
-# %%
 def main():
     """
         Entry point when using CRNN from the commandline
@@ -161,9 +157,5 @@ def main():
         crnn.test()
 
 
-# %%
 if __name__ == "__main__":
     main()
-
-
-# %%
