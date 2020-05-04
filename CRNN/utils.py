@@ -46,11 +46,13 @@ def resize_image(im_arr, input_width):
 
 def label_to_array(label, char_vector):
     try:
-        label = label.replace("&", " and ")
+        label = label.replace("&", "_and_")
+        label = label.strip("\n")
+        label = label.replace(" ", "")
         # print("char index", [char_vector.index(x) for x in label])
         return [char_vector.index(x) for x in label]
     except Exception as ex:
-        print(label)
+        print("Expection raised:", label)
         raise ex
 
 
