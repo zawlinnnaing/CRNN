@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from scipy.misc.pilutil import imread, imresize, imsave
+from PIL import Image
 
 
 def sparse_tuple_from(sequences, dtype=np.int32):
@@ -28,16 +28,18 @@ def sparse_tuple_from(sequences, dtype=np.int32):
 def resize_image(im_arr, input_width):
     """Resize an image to the "good" input size
     """
-
+    image = Image.fromarray(im_arr)
+    image = image.convert('L')
+    im_arr = np.array(image)
     r, c = np.shape(im_arr)
     if c > input_width:
         c = input_width
         ratio = float(input_width) / c
-        final_arr = imresize(im_arr, (int(32 * ratio), input_width))
+        final_arr = np.array(image.resize((input_width, int(32 * ratio))))
     else:
         final_arr = np.zeros((32, input_width))
         ratio = 32.0 / r
-        im_arr_resized = imresize(im_arr, (32, int(c * ratio)))
+        im_arr_resized = np.array(image.resize((int(c * ratio), 32)))
         final_arr[
             :, 0: min(input_width, np.shape(im_arr_resized)[1])
         ] = im_arr_resized[:, 0:input_width]

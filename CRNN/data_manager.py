@@ -5,7 +5,7 @@ import tensorflow as tf
 from multiprocessing import Queue, Process
 from utils import sparse_tuple_from, resize_image, label_to_array
 
-from scipy.misc import imread
+from PIL import Image
 from trdg.generators import GeneratorFromDict
 
 
@@ -115,7 +115,8 @@ class DataManager(object):
             if len(f.split("_")[0]) > self.max_char_count:
                 continue
             arr, initial_len = resize_image(
-                imread(os.path.join(self.examples_path, f), mode="L"),
+                np.array(Image.open(os.path.join(
+                    self.examples_path, f), mode="r")),
                 self.max_image_width,
             )
             examples.append(
@@ -160,6 +161,8 @@ class DataManager(object):
                 np.array(raw_batch_x), (len(raw_batch_x),
                                         self.max_image_width, 32, 1)
             )
+
+            print("batch x shape:", batch_x.shape)
 
             train_batches.append((batch_y, batch_dt, batch_x))
         return train_batches

@@ -3,7 +3,6 @@ import time
 import sys
 import numpy as np
 import tensorflow as tf
-from scipy.misc.pilutil import imread, imresize, imsave
 from tensorflow.contrib import rnn
 
 from data_manager import DataManager
@@ -308,7 +307,7 @@ class CRNN(object):
 
         dense_decoded = tf.sparse_tensor_to_dense(
             decoded[0], default_value=-1, name="dense_decoded"
-        )  # shape: []
+        )  # shape: [batch_size, max_decoded_length]
 
         # The error rate
         acc = tf.reduce_mean(tf.edit_distance(
@@ -388,10 +387,10 @@ class CRNN(object):
                         * self.data_manager.batch_size,
                     },
                 )
-                print("decoded", decoded)
 
                 for i, y in enumerate(batch_y):
                     print("Test result", batch_y[i])
+                    print(f"decode batch:{i}", decode[i])
                     print("Ground truth", ground_truth_to_word(
                         decoded[i], self.CHAR_VECTOR))
         return None
