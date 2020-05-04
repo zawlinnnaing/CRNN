@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 import numpy as np
 import tensorflow as tf
 from scipy.misc.pilutil import imread, imresize, imsave
@@ -120,8 +121,9 @@ class CRNN(object):
 
                 inter_output, _ = tf.nn.bidirectional_dynamic_rnn(
                     lstm_fw_cell_1, lstm_bw_cell_1, inputs, seq_len, dtype=tf.float32
-                )
+                )  # shape: ([batch_size, max_time, 256], [batch_size, max_time, 256])
 
+                # shape: [batch_size, max_time, 512]
                 inter_output = tf.concat(inter_output, 2)
 
             with tf.variable_scope(None, default_name="bidirectional-rnn-2"):
@@ -136,9 +138,10 @@ class CRNN(object):
                     inter_output,
                     seq_len,
                     dtype=tf.float32,
-                )
+                )  # shape: ([batch_size, max_time, 256], [batch_size, max_time, 256])
 
                 outputs = tf.concat(outputs, 2)
+                # shape: [batch_size, max_time, 512]
 
             return outputs
 
@@ -234,7 +237,7 @@ class CRNN(object):
                 activation=tf.nn.relu,
             )
 
-            return conv7
+            return conv7  # shape: (batch_size, H, 1, 512)
 
         batch_size = None
         inputs = tf.placeholder(
@@ -247,9 +250,12 @@ class CRNN(object):
         # The length of the sequence
         seq_len = tf.placeholder(tf.int32, [None], name="seq_len")
 
+        # feature map shape: (batch_size, max_time, 1, 512)
         cnn_output = CNN(inputs)
-        reshaped_cnn_output = tf.squeeze(cnn_output, [2])
-        max_char_count = cnn_output.get_shape().as_list()[1]
+        reshaped_cnn_output = tf.squeeze(
+            cnn_output, [2])  # shape: (batch_size, H, 512)
+        max_char_count = cnn_output.get_shape().as_list()[
+            1]  # shape: (max_time)
 
         crnn_model = BidirectionnalRNN(reshaped_cnn_output, seq_len)
 
@@ -259,20 +265,24 @@ class CRNN(object):
         )
         b = tf.Variable(tf.constant(0.0, shape=[self.NUM_CLASSES]), name="b")
 
-        logits = tf.matmul(logits, W) + b
+        logits = tf.matmul(logits, W) + b  # shape: [, NUM_CLASSES]
         logits = tf.reshape(
             logits, [tf.shape(cnn_output)[0], max_char_count, self.NUM_CLASSES]
-        )
+        )  # shape: [batch_size, max_time, NUM_CLASSES]
 
         # Final layer, the output of the BLSTM
-        logits = tf.transpose(logits, (1, 0, 2))
+        logits = tf.transpose(logits, (1, 0, 2))  # shape: [H, W, NUM_CLASSES]
 
         # Loss and cost calculation
+        # shapes -
+        # targets: [batch_size, max_label_seq_length]
+        # logins: [max_time, batch_size, num_labels]
+        # loss: [batch_size]
         loss = tf.nn.ctc_loss(
             targets, logits, seq_len, ignore_longer_outputs_than_inputs=True
         )
 
-        cost = tf.reduce_mean(loss)
+        cost = tf.reduce_mean(loss)  # shape: [batch_size]
 
         # Training step
         optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
@@ -288,12 +298,17 @@ class CRNN(object):
             optimizer = optimizer.minimize(cost)
 
             # The decoded answer
+        # shapes:
+        # decoded: [top_path_decoded_list]
+        # decode[i]: [batch_size, max_decoded_length]
+        # log_prob: [batch_size, top_paths]
         decoded, log_prob = tf.nn.ctc_beam_search_decoder(
             logits, seq_len, merge_repeated=False
         )
+
         dense_decoded = tf.sparse_tensor_to_dense(
             decoded[0], default_value=-1, name="dense_decoded"
-        )
+        )  # shape: []
 
         # The error rate
         acc = tf.reduce_mean(tf.edit_distance(
