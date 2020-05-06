@@ -43,7 +43,6 @@ class CRNN(object):
         self.save_path = os.path.join(model_path, "ckp")
 
         self.restore = restore
-        current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         self.train_log_dir = "tensorboard/train/"
         self.training_name = str(int(time.time()))
         self.session = tf.Session()
@@ -243,6 +242,8 @@ class CRNN(object):
 
         # feature map shape: (batch_size, max_time, 1, 512)
         cnn_output = CNN(inputs)
+
+        print("cnn output shape", cnn_output.shape)
 
         tf.summary.image("cnn output", cnn_output[:, :, :, :4], max_outputs=3)
 
