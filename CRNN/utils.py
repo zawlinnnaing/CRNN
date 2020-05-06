@@ -56,7 +56,7 @@ def label_to_array(label, char_vector):
         char = x
         return [char_vector.index(x) for x in label]
     except Exception as ex:
-        print("Expection raised:", label, 'Char: ' char)
+        print("Expection raised:", label, 'Char: ', char)
         raise ex
 
 
