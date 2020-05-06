@@ -105,6 +105,7 @@ class DataManager(object):
         return: List with tuples (img_arr, label_string, label_index_array) and list length
         """
 
+        # TODO:: Change this for different format of data.
         print("Loading data")
 
         examples = []

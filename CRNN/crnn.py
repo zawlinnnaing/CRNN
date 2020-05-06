@@ -312,7 +312,7 @@ class CRNN(object):
         # The error rate
         acc = tf.reduce_mean(tf.edit_distance(
             tf.cast(decoded[0], tf.int32), targets))
-
+        
         init = tf.global_variables_initializer()
 
         return (
