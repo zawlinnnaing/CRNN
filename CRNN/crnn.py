@@ -272,7 +272,7 @@ class CRNN(object):
         cost = tf.reduce_mean(loss)  # shape: [batch_size]
 
         # Training step
-        optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.002)
 
         optimizer = optimizer.minimize(cost)
 
@@ -336,6 +336,7 @@ class CRNN(object):
                             pred = ground_truth_to_word(
                                 decoded[j], self.CHAR_VECTOR)
                             print("{} | {}".format(batch_y[j], pred))
+                            print("loss value: {}".format(loss_value))
                         print("---- {} | {} ----".format(i, batch_count))
 
                     iter_loss += loss_value

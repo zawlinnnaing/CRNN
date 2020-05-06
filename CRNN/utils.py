@@ -50,7 +50,6 @@ def label_to_array(label, char_vector):
     char = ''
     label_arr = []
     try:
-        label = label.replace("&", "_and_")
         label = label.strip("\n")
         label = label.replace(" ", "")
         # print("char index", [char_vector.index(x) for x in label])
