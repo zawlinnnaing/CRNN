@@ -243,12 +243,10 @@ class CRNN(object):
         # feature map shape: (batch_size, max_time, 1, 512)
         cnn_output = CNN(inputs)
 
-        print("cnn output shape", cnn_output.shape)
-
-        tf.summary.image("cnn output", cnn_output[:, :, :, :4], max_outputs=3)
-
         reshaped_cnn_output = tf.squeeze(
             cnn_output, [2])  # shape: (batch_size, H, 512)
+        tf.summary.image("cnn output", reshaped_cnn_output, max_outputs=3)
+
         max_char_count = cnn_output.get_shape().as_list()[
             1]  # shape: (max_time)
 
