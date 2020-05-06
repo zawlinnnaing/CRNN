@@ -370,9 +370,9 @@ class CRNN(object):
                 )
 
                 for i, y in enumerate(batch_y):
-                    print("Test result", batch_y[i])
-                    print(f"decode batch:{i}", decode[i])
-                    print("Ground truth", ground_truth_to_word(
+                    print("Ground truth", batch_y[i])
+                    print(f"decode batch:{i}", decoded.shape)
+                    print("Test result", ground_truth_to_word(
                         decoded[i], self.CHAR_VECTOR))
         return None
 

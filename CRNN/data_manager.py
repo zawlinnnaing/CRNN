@@ -128,6 +128,8 @@ class DataManager(object):
                 )
             )
             count += 1
+            if len(examples) < self.batch_size:
+                raise "Error: Data less than batch size"
 
         return examples, len(examples)
 
