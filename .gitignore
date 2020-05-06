@@ -111,5 +111,6 @@ model/
 save/
 CRNN/save/*
 CRNN/save_cn/
+tensorboard/*
 
 __pycache__/

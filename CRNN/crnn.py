@@ -1,6 +1,7 @@
 import os
 import time
 import sys
+import datetime
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import rnn
@@ -42,7 +43,8 @@ class CRNN(object):
         self.save_path = os.path.join(model_path, "ckp")
 
         self.restore = restore
-
+        current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.train_log_dir = "tensorboard/train/"
         self.training_name = str(int(time.time()))
         self.session = tf.Session()
 
@@ -70,6 +72,8 @@ class CRNN(object):
             #       tf.compat.v1.trainable_variables(scope="batch"),
             #       "\n",
             #   tf.compat.v1.trainable_variables())
+            self.train_summary_writer = tf.summary.FileWriter(
+                self.train_log_dir, tf.get_default_session().graph)
             self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
             # Loading last save if needed
             if self.restore:
@@ -270,6 +274,7 @@ class CRNN(object):
         )
 
         cost = tf.reduce_mean(loss)  # shape: [batch_size]
+        tf.summary.scalar("ctc loss", cost)
 
         # Training step
         optimizer = tf.train.AdamOptimizer(learning_rate=0.002)
@@ -292,7 +297,7 @@ class CRNN(object):
         # The error rate
         acc = tf.reduce_mean(tf.edit_distance(
             tf.cast(decoded[0], tf.int32), targets))
-
+        tf.summary.scalar("Accuracy", acc)
         init = tf.global_variables_initializer()
 
         return (
@@ -306,22 +311,24 @@ class CRNN(object):
             cost,
             max_char_count,
             init,
-            W
+            W,
         )
 
     def train(self, iteration_count):
         with self.session.as_default():
             print("Training")
             self.max_weight = tf.math.reduce_max(self.weight_matrix)
+            merged = tf.summary.merge_all()
 
             for i in range(self.step, iteration_count + self.step):
                 print("Processing iteration ::", i)
                 batch_count = 0
                 iter_loss = 0
+
                 for batch_y, batch_dt, batch_x in self.data_manager.train_batches:
-                    op, decoded, loss_value, acc, max_weight = self.session.run(
+                    op, decoded, loss_value, acc, max_weight, summary = self.session.run(
                         [self.optimizer, self.decoded, self.cost,
-                            self.acc, self.max_weight],
+                            self.acc, self.max_weight, merged],
                         feed_dict={
                             self.inputs: batch_x,
                             self.seq_len: [self.max_char_count]
@@ -329,6 +336,7 @@ class CRNN(object):
                             self.targets: batch_dt,
                         },
                     )
+                    self.train_summary_writer.add_summary(summary, self.step)
 
                     if i % 1 == 0:
                         for j in range(2):
@@ -347,6 +355,7 @@ class CRNN(object):
                 self.saver.save(self.session, self.save_path,
                                 global_step=self.step)
 
+                self.train_summary_writer.flush()
                 self.save_frozen_model("save/frozen.pb")
 
                 print("[{}] Iteration loss: {} Error rate: {}".format(
@@ -354,6 +363,7 @@ class CRNN(object):
 
                 print("max weight", max_weight)
                 self.step += 1
+            self.train_summary_writer.close()
         return None
 
     def test(self):
