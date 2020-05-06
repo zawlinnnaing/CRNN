@@ -115,8 +115,9 @@ def main():
         with open(args.char_set_string, "r") as f:
             while True:
                 c = f.readline()
-                charset += c
+                charset += c.strip("\n")
                 if not c:
+                    charset += "\n" # Add line break to charset at the end
                     break
     else:
         charset = args.char_set_string
