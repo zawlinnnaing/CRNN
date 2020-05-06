@@ -29,15 +29,11 @@ class CRNN(object):
             char_set_string,
             use_trdg,
             language,
-            freeze_cnn,
-            first_time=False
     ):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         self.step = 0
         self.CHAR_VECTOR = char_set_string
         self.NUM_CLASSES = len(self.CHAR_VECTOR) + 1
-        self.freeze_cnn = freeze_cnn
-        self.first_time = first_time
         # print("CHAR_VECTOR {}".format(self.CHAR_VECTOR))
         print("NUM_CLASSES {}".format(self.NUM_CLASSES))
         print("BATCH_SIZE {}".format(batch_size))
@@ -83,15 +79,7 @@ class CRNN(object):
                 if ckpt:
                     print("Checkpoint is valid")
                     self.step = int(ckpt.split("-")[1])
-                    if self.first_time:
-                        print(
-                            "Restoring only CNN variables , since it is first time.")
-                        var_list = tf.compat.v1.trainable_variables(
-                            scope='conv') + tf.compat.v1.trainable_variables(scope='batch')
-                        saver = tf.train.Saver(var_list)
-                        saver.restore(self.session, ckpt)
-                    else:
-                        self.saver.restore(self.session, ckpt)
+                    self.saver.restore(self.session, ckpt)
 
         # Creating data_manager
         self.data_manager = DataManager(
@@ -285,18 +273,10 @@ class CRNN(object):
 
         # Training step
         optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
-        if self.freeze_cnn:
-            # Only training weight and bias and bidirectional-rnn tensors
-            trainable_variables = []
-            trainable_variables.extend(
-                tf.compat.v1.trainable_variables(scope="bidirectional-rnn"))
-            trainable_variables.extend(
-                tf.compat.v1.trainable_variables(scope="(W:|b:)"))
-            optimizer = optimizer.minimize(cost, var_list=trainable_variables)
-        else:
-            optimizer = optimizer.minimize(cost)
 
-            # The decoded answer
+        optimizer = optimizer.minimize(cost)
+
+        # The decoded answer
         # shapes:
         # decoded: [top_path_decoded_list]
         # decode[i]: [batch_size, max_decoded_length]
@@ -312,7 +292,7 @@ class CRNN(object):
         # The error rate
         acc = tf.reduce_mean(tf.edit_distance(
             tf.cast(decoded[0], tf.int32), targets))
-        
+
         init = tf.global_variables_initializer()
 
         return (

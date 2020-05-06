@@ -89,11 +89,11 @@ def parse_arguments():
         default="en",
     )
 
-    parser.add_argument('-fcnn', '--freeze_cnn',
-                        action='store_true', help="Freeze CNN layers")
+    # parser.add_argument('-fcnn', '--freeze_cnn',
+    #                     action='store_true', help="Freeze CNN layers")
 
-    parser.add_argument('-ft', '--first_time', action='store_true',
-                        help='Is model restore for first time.')
+    # parser.add_argument('-ft', '--first_time', action='store_true',
+    #                     help='Is model restore for first time.')
     return parser.parse_args()
 
 
@@ -132,8 +132,6 @@ def main():
             charset,
             args.use_trdg,
             args.language,
-            args.freeze_cnn,
-            args.first_time
         )
 
         crnn.train(args.iteration_count)
@@ -150,8 +148,6 @@ def main():
                 charset,
                 args.use_trdg,
                 args.language,
-                args.freeze_cnn,
-                args.first_time,
             )
 
         crnn.test()
