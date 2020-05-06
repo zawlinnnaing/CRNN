@@ -57,11 +57,11 @@ def label_to_array(label, char_vector):
         for x in label:
             char = x
             label_arr.append(char_vector.index(x))
-        return label_arr
     except Exception as ex:
         print("Expection raised:", label,
               'Char type :', type(char), 'char: ', char)
-        raise ex
+    finally:
+        return label_arr
 
 
 def ground_truth_to_word(ground_truth, char_vector):
