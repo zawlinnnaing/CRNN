@@ -151,7 +151,7 @@ class DataManager(object):
 
             batch_dt = sparse_tuple_from(np.array(raw_batch_la))
 
-            print("\t Batch Label index: {}".format(batch_dt[1][0]))
+            print("\t Batch Label index: {}".format(batch_dt[1]))
 
             raw_batch_x = np.swapaxes(raw_batch_x, 1, 2)
 
