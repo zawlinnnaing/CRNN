@@ -56,7 +56,8 @@ def label_to_array(label, char_vector):
         # print("char index", [char_vector.index(x) for x in label])
         for x in label:
             char = x
-            label_arr.append(char_vector.index(x))
+            if char_vector.index(x) >= 0:
+                label_arr.append(char_vector.index(x))
     except Exception as ex:
         print("Expection raised:", label,
               'Char type :', type(char), 'char: ', char)
