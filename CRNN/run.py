@@ -115,7 +115,7 @@ def main():
         with open(args.char_set_string, "r") as f:
             while True:
                 c = f.readline()
-                charset += c.strip('\n')
+                charset += c
                 if not c:
                     break
     else:
