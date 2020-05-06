@@ -89,6 +89,11 @@ def parse_arguments():
         default="en",
     )
 
+    parser.add_argument("-lr", "--learning_rate",
+                        type=float,
+                        help="Learning Rate for Adam Optimizer",
+                        default=0.0001)
+
     # parser.add_argument('-fcnn', '--freeze_cnn',
     #                     action='store_true', help="Freeze CNN layers")
 
@@ -117,7 +122,7 @@ def main():
                 c = f.readline()
                 charset += c.strip("\n")
                 if not c:
-                    charset += "\n" # Add line break to charset at the end
+                    charset += "\n"  # Add line break to charset at the end
                     break
     else:
         charset = args.char_set_string
@@ -133,6 +138,7 @@ def main():
             charset,
             args.use_trdg,
             args.language,
+            args.learning_rate
         )
 
         crnn.train(args.iteration_count)
@@ -149,6 +155,7 @@ def main():
                 charset,
                 args.use_trdg,
                 args.language,
+                args.learning_rate
             )
 
         crnn.test()

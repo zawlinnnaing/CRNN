@@ -30,6 +30,7 @@ class CRNN(object):
             char_set_string,
             use_trdg,
             language,
+            learning_rate
     ):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
         self.step = 0
@@ -40,6 +41,7 @@ class CRNN(object):
         print("BATCH_SIZE {}".format(batch_size))
 
         self.model_path = model_path
+        self.learning_rate = learning_rate
         self.save_path = os.path.join(model_path, "ckp")
 
         self.restore = restore
@@ -280,7 +282,7 @@ class CRNN(object):
         tf.summary.scalar("ctc loss", cost)
 
         # Training step
-        optimizer = tf.train.AdamOptimizer(learning_rate=0.002)
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
 
         optimizer = optimizer.minimize(cost)
 
