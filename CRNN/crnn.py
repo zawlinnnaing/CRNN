@@ -43,6 +43,7 @@ class CRNN(object):
         self.model_path = model_path
         self.learning_rate = learning_rate
         self.save_path = os.path.join(model_path, "ckp")
+        print("Learning Rate {}".format(self.learning_rate))
 
         self.restore = restore
         self.train_log_dir = "tensorboard/train/"
@@ -349,7 +350,6 @@ class CRNN(object):
                             pred = ground_truth_to_word(
                                 decoded[j], self.CHAR_VECTOR)
                             print("{} | {}".format(batch_y[j], pred))
-                            print("loss value: {}".format(loss_value))
                         print("---- {} | {} ----".format(i, batch_count))
 
                     iter_loss += loss_value
